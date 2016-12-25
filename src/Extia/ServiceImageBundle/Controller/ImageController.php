@@ -2,7 +2,13 @@
 
 namespace Extia\ServiceImageBundle\Controller;
 //use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Response;
 use FOS\RestBundle\Controller\FOSRestController;
+use Extia\ServiceImageBundle\Entity\Image;
+
 
 class ImageController extends FOSRestController
 {
@@ -31,8 +37,35 @@ class ImageController extends FOSRestController
     }
     // "post_image" -- [POST] /image
     // Création d'une image (upload)
-    public function postImageAction()
+    public function postImageAction(Request $request)
     {
+        $image = new Image();
+        $file = $request->files->get('file');
+        $info = pathinfo($file->getClientOriginalName());
+        $originalFileName =  basename($file->getClientOriginalName(),'.'.$info['extension']);
+        $fileCode = md5(uniqid());
+        $fileCodeName =  $fileCode.'.'.$file->guessExtension();
+
+        $image->setImageFullName($fileCodeName );
+        $image->setImageName($originalFileName );
+        $image->setImageExtension($file->guessExtension() );
+        $image->setImageSize($file->getClientSize()  );
+
+        $image->setImageCode($fileCode );
+        $image->setImageType($file->getClientMimeType() );
+
+        $file->move(
+            $this->getParameter('api_service_image_directory'),
+            $fileCodeName
+        );
+
+        $em = $this->getDoctrine()->getManager();
+        $em->persist($image);
+        $em->flush();
+        $response = new JsonResponse();
+        $response->setData(array('message' => 'success'));
+        return $response;
+
 
     }
     // "put_image" -- [PUT] /image/{id}
