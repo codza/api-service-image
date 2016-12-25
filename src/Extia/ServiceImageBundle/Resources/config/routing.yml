@@ -1,3 +1,6 @@
 service_image_homepage:
     path:     /
     defaults: { _controller: ServiceImageBundle:Default:index }
+service_image_ressources:
+    type:     rest
+    resource: "@ServiceImageBundle/Controller/ImageController.php"
