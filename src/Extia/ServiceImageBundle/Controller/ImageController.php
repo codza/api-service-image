@@ -116,18 +116,41 @@ class ImageController extends FOSRestController
 
 
     }
-    // "put_image" -- [PUT] /image/{id}
+    // "put_image" -- [PUT] /images/{id}
     // Mise à jour complete d'une image (upload)
-    public function putImageAction($id)
+    public function putImageAction($id, Request $request)
     {
 
+        $em = $this->getDoctrine()->getManager();
+        $imageRepository= $em->getRepository("ServiceImageBundle:Image");
+        $image = $imageRepository->find($id);
+        $newFileName = $request->get("newFileName");
+
+
+        $response = new JsonResponse();
+        if ($image==null){
+            $response->setData(array('status' => 'error'));
+        }else{
+
+
+
+            $em->persist($image);
+            $em->flush();
+            $response->setData(array('status' => 'success'));
+        }
+
+    return $response;
+
     }
-    // "patch_user" -- [PATCH] /image/{id}
+    // "patch_user" -- [PATCH] /images/{id}
     // Mise à jour partiel d'une image
     public function patchImageAction($id)
     {
 
     }
+
+
+
     // "delete_user" -- [DELETE] /image/{id}
     // Suppression d'une image
     public function deleteImageAction($id)
