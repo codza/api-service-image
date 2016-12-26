@@ -58,14 +58,14 @@ class ImageController extends FOSRestController
         $em = $this->getDoctrine()->getManager();
         $imageRepository= $em->getRepository("ServiceImageBundle:Image");
         $image = $imageRepository->find($id);
-        $filetodownload = $this->getParameter('api_service_image_directory')."/".$image->getImageFullName();
+        $fileDownload = $this->getParameter('api_service_image_directory')."/".$image->getImageFullName();
 
 /*        $response = new JsonResponse();
         $response->setData(array('status' => 'success','images' => $filetodownload));
         return $response;*/
 
         $response = new Response();
-        $response->setContent(file_get_contents($filetodownload));
+        $response->setContent(file_get_contents($fileDownload));
         $response->headers->set('Content-Type', 'application/force-download'); // modification du content-type pour forcer le téléchargement (sinon le navigateur internet essaie d'afficher le document)
         $response->headers->set('Content-disposition', 'filename='. $image->getImageFullName());
 
@@ -132,6 +132,26 @@ class ImageController extends FOSRestController
     // Suppression d'une image
     public function deleteImageAction($id)
     {
+
+        $em = $this->getDoctrine()->getManager();
+        $imageRepository= $em->getRepository("ServiceImageBundle:Image");
+        $image = $imageRepository->find($id);
+
+        $response = new JsonResponse();
+
+
+        if ($image == NULL ){
+            $response->setData(array('status' => 'no such image'));
+        }else{
+            $fileDownload = $this->getParameter('api_service_image_directory')."/".$image->getImageFullName();
+            $em->remove($image);
+            $em->flush();
+            unlink($fileDownload);
+            $response->setData(array('status' => 'deleted'));
+        }
+
+        return $response;
+
 
     }
 }
