@@ -1,7 +1,7 @@
 <?php
 
 namespace Extia\ServiceImageBundle\Controller;
-//use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -10,7 +10,7 @@ use FOS\RestBundle\Controller\FOSRestController;
 use Extia\ServiceImageBundle\Entity\Image;
 
 
-class ImageController extends FOSRestController
+class ImageController extends Controller
 {
 /*    public function indexAction($name)
     {
@@ -20,6 +20,16 @@ class ImageController extends FOSRestController
     // renvois les infos de toutes les images
     public function getImagesAction()
     {
+        $em = $this->getDoctrine()->getManager();
+        $imageRepository= $em->getRepository("ServiceImageBundle:Image");
+        $images = $imageRepository->findAll();
+
+        $serializer = $this->get('serializer');
+        $imagesSerialised = $serializer->serialize($images, 'json');
+
+        $response = new JsonResponse();
+        $response->setData(array('status' => 'success','images' => $imagesSerialised));
+        return $response;
 
     }
 
@@ -27,6 +37,17 @@ class ImageController extends FOSRestController
     // renvois les info d'une image
     public function getImageAction($id)
     {
+
+        $em = $this->getDoctrine()->getManager();
+        $imageRepository= $em->getRepository("ServiceImageBundle:Image");
+        $image = $imageRepository->find($id);
+
+        $serializer = $this->get('serializer');
+        $imageSerialised = $serializer->serialize($image, 'json');
+
+        $response = new JsonResponse();
+        $response->setData(array('status' => 'success','images' => $imageSerialised));
+        return $response;
 
     }
     // "raw_image" -- [GET] /image/{id}/raw
@@ -41,29 +62,39 @@ class ImageController extends FOSRestController
     {
         $image = new Image();
         $file = $request->files->get('file');
-        $info = pathinfo($file->getClientOriginalName());
-        $originalFileName =  basename($file->getClientOriginalName(),'.'.$info['extension']);
-        $fileCode = md5(uniqid());
-        $fileCodeName =  $fileCode.'.'.$file->guessExtension();
 
-        $image->setImageFullName($fileCodeName );
-        $image->setImageName($originalFileName );
-        $image->setImageExtension($file->guessExtension() );
-        $image->setImageSize($file->getClientSize()  );
-
-        $image->setImageCode($fileCode );
-        $image->setImageType($file->getClientMimeType() );
-
-        $file->move(
-            $this->getParameter('api_service_image_directory'),
-            $fileCodeName
-        );
-
-        $em = $this->getDoctrine()->getManager();
-        $em->persist($image);
-        $em->flush();
+   //     die("hello");
         $response = new JsonResponse();
-        $response->setData(array('message' => 'success'));
+        if($file==NULL){
+            $response->setData(array('status' => 'error'));
+
+        }else{
+
+            $info = pathinfo($file->getClientOriginalName());
+            $originalFileName =  basename($file->getClientOriginalName(),'.'.$info['extension']);
+            $fileCode = md5(uniqid());
+            $fileCodeName =  $fileCode.'.'.$file->guessExtension();
+
+            $image->setImageFullName($fileCodeName );
+            $image->setImageName($originalFileName );
+            $image->setImageExtension($file->guessExtension() );
+            $image->setImageSize($file->getClientSize()  );
+
+            $image->setImageCode($fileCode );
+            $image->setImageType($file->getClientMimeType() );
+
+            $file->move(
+                $this->getParameter('api_service_image_directory'),
+                $fileCodeName
+            );
+
+            $em = $this->getDoctrine()->getManager();
+            $em->persist($image);
+            $em->flush();
+            $response->setData(array('status' => 'success'));
+
+        }
+
         return $response;
 
 
