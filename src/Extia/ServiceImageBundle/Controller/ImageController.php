@@ -125,15 +125,13 @@ class ImageController extends FOSRestController
         $imageRepository= $em->getRepository("ServiceImageBundle:Image");
         $image = $imageRepository->find($id);
         $newFileName = $request->get("newFileName");
-
-
+        
         $response = new JsonResponse();
         if ($image==null){
             $response->setData(array('status' => 'error'));
         }else{
 
-
-
+            $image->setImageName($newFileName);
             $em->persist($image);
             $em->flush();
             $response->setData(array('status' => 'success'));
