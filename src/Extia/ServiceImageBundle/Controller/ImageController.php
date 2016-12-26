@@ -1,7 +1,7 @@
 <?php
 
 namespace Extia\ServiceImageBundle\Controller;
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+//use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -10,7 +10,7 @@ use FOS\RestBundle\Controller\FOSRestController;
 use Extia\ServiceImageBundle\Entity\Image;
 
 
-class ImageController extends Controller
+class ImageController extends FOSRestController
 {
 /*    public function indexAction($name)
     {
@@ -52,8 +52,25 @@ class ImageController extends Controller
     }
     // "raw_image" -- [GET] /image/{id}/raw
     // renvois l'image en elle même (download)
-    public function rawImageAction($id)
+    public function getImageRawAction($id)
     {
+
+        $em = $this->getDoctrine()->getManager();
+        $imageRepository= $em->getRepository("ServiceImageBundle:Image");
+        $image = $imageRepository->find($id);
+        $filetodownload = $this->getParameter('api_service_image_directory')."/".$image->getImageFullName();
+
+/*        $response = new JsonResponse();
+        $response->setData(array('status' => 'success','images' => $filetodownload));
+        return $response;*/
+
+        $response = new Response();
+        $response->setContent(file_get_contents($filetodownload));
+        $response->headers->set('Content-Type', 'application/force-download'); // modification du content-type pour forcer le téléchargement (sinon le navigateur internet essaie d'afficher le document)
+        $response->headers->set('Content-disposition', 'filename='. $image->getImageFullName());
+
+        return $response;
+
 
     }
     // "post_image" -- [POST] /image
