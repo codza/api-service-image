@@ -24,11 +24,12 @@ class ImageController extends FOSRestController
         $imageRepository= $em->getRepository("ServiceImageBundle:Image");
         $images = $imageRepository->findAll();
 
-        $serializer = $this->get('serializer');
-        $imagesSerialised = $serializer->serialize($images, 'json');
+       // $serializer = $this->get('serializer');
+      //  $imagesSerialised = $serializer->serialize($images, 'json');
 
         $response = new JsonResponse();
-        $response->setData(array('status' => 'success','images' => $imagesSerialised));
+        $response->setData(array('status' => 'success','images' => $images));
+    //    $response->setData(array('status' => 'success','images' => $imagesSerialised));
         return $response;
 
     }
@@ -42,11 +43,12 @@ class ImageController extends FOSRestController
         $imageRepository= $em->getRepository("ServiceImageBundle:Image");
         $image = $imageRepository->find($id);
 
-        $serializer = $this->get('serializer');
-        $imageSerialised = $serializer->serialize($image, 'json');
+    //    $serializer = $this->get('serializer');
+     //   $imageSerialised = $serializer->serialize($image, 'json');
 
         $response = new JsonResponse();
-        $response->setData(array('status' => 'success','images' => $imageSerialised));
+        $response->setData(array('status' => 'success','images' => $image));
+    //    $response->setData(array('status' => 'success','images' => $imageSerialised));
         return $response;
 
     }
@@ -120,31 +122,14 @@ class ImageController extends FOSRestController
     // Mise à jour complete d'une image (upload)
     public function putImageAction($id, Request $request)
     {
-
-        $em = $this->getDoctrine()->getManager();
-        $imageRepository= $em->getRepository("ServiceImageBundle:Image");
-        $image = $imageRepository->find($id);
-        $newFileName = $request->get("newFileName");
-        
-        $response = new JsonResponse();
-        if ($image==null){
-            $response->setData(array('status' => 'error'));
-        }else{
-
-            $image->setImageName($newFileName);
-            $em->persist($image);
-            $em->flush();
-            $response->setData(array('status' => 'success'));
-        }
-
-    return $response;
-
+        return $this->changeImageName($id, $request);
     }
+
     // "patch_user" -- [PATCH] /images/{id}
     // Mise à jour partiel d'une image
-    public function patchImageAction($id)
+    public function patchImageAction($id, Request $request)
     {
-
+        return $this->changeImageName($id, $request);
     }
 
 
@@ -155,11 +140,10 @@ class ImageController extends FOSRestController
     {
 
         $em = $this->getDoctrine()->getManager();
-        $imageRepository= $em->getRepository("ServiceImageBundle:Image");
+        $imageRepository = $em->getRepository("ServiceImageBundle:Image");
         $image = $imageRepository->find($id);
 
         $response = new JsonResponse();
-
 
         if ($image == NULL ){
             $response->setData(array('status' => 'no such image'));
@@ -173,6 +157,26 @@ class ImageController extends FOSRestController
 
         return $response;
 
-
     }
+
+    private function changeImageName($id,Request $request )
+    {
+        $em = $this->getDoctrine()->getManager();
+        $imageRepository= $em->getRepository("ServiceImageBundle:Image");
+        $image = $imageRepository->find($id);
+        $newFileName = $request->get("newFileName");
+
+        $response = new JsonResponse();
+        if ($image==null){
+            $response->setData(array('status' => 'error'));
+        }else{
+
+            $image->setImageName($newFileName);
+            $em->persist($image);
+            $em->flush();
+            $response->setData(array('status' => 'success'));
+        }
+        return $response;
+    }
+
 }

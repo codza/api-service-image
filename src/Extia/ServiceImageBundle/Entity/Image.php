@@ -3,14 +3,14 @@
 namespace Extia\ServiceImageBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
-
+use JsonSerializable;
 /**
  * Image
  *
  * @ORM\Table(name="tbl_image")
  * @ORM\Entity(repositoryClass="Extia\ServiceImageBundle\Repository\ImageRepository")
  */
-class Image
+class Image implements JsonSerializable
 {
     /**
      * @var int
@@ -173,8 +173,25 @@ class Image
     }
 
 
-
-
-
+    /**
+     * Specify data which should be serialized to JSON
+     * @link http://php.net/manual/en/jsonserializable.jsonserialize.php
+     * @return mixed data which can be serialized by <b>json_encode</b>,
+     * which is a value of any type other than a resource.
+     * @since 5.4.0
+     */
+    function jsonSerialize()
+    {
+        return array(
+            'image_code' => $this->getImageCode(),
+            'image_full_name' => $this->getImageFullName(),
+            'image_name' => $this->getImageName(),
+            'image_type' => $this->getImageType(),
+            'image_extension' => $this->getImageExtension(),
+            'image_size' => $this->getImageSize(),
+/*            'created_at' => $this->getCreatedAt(),
+            'updated_at' => $this->getUpdatedAt(),*/
+        );
+    }
 }
 
